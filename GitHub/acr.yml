@@ -1,0 +1,42 @@
+name: Build and Push to Azure Container Registry
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  ACR_NAME: YOUR_ACR_NAME
+  IMAGE_NAME: DOCKER_IMAGE_NAME
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+            submodules: 'true'
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "tag=$(date +'%H%M%S%d%m%Y')" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        working-directory: ./
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} .
+          docker tag ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          echo "Published: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}"
+
+      - name: Trigger webhook
+        run: curl -fS -X POST ${{secrets.WEBHOOK_ENDPOINT}}

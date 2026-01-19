@@ -1,0 +1,42 @@
+name: Build and Push to Quay.io
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  QUAY_REGISTRY: quay.io
+  IMAGE_NAME: QUAY_USERNAME/DOCKER_IMAGE_NAME
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+            submodules: 'true'
+
+      - name: Log in to Quay.io
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "tag=$(date +'%H%M%S%d%m%Y')" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        working-directory: ./
+        run: |
+          docker build -t ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} .
+          docker tag ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}
+          docker push ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          echo "Published: ${{ env.QUAY_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}"
+
+      - name: Trigger webhook
+        run: curl -fS -X POST ${{secrets.WEBHOOK_ENDPOINT}}

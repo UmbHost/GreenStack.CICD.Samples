@@ -9,9 +9,25 @@ For new users we recommend following the [Getting Started](https://umbhost.net/g
 
 ## CI/CD Samples
 
-You can find samples for some providers below:
+You can find samples for the following CI/CD providers and container registries:
 
-- [Github Actions](/GitHub/README.md)
+### GitHub Actions
+- [GitHub Container Registry (GHCR)](/GitHub/README.md#github-container-registry-ghcr)
+- [Docker Hub](/GitHub/README.md#docker-hub)
+- [Azure Container Registry (ACR)](/GitHub/README.md#azure-container-registry-acr)
+- [AWS Elastic Container Registry (ECR)](/GitHub/README.md#aws-elastic-container-registry-ecr)
+- [Quay.io](/GitHub/README.md#quayio)
+- [ProGet](/GitHub/README.md#proget)
+- [GitLab Container Registry](/GitHub/README.md#gitlab-container-registry)
+
+### Azure DevOps
+- [Docker Hub](/AzureDevOps/README.md#docker-hub)
+- [GitHub Container Registry (GHCR)](/AzureDevOps/README.md#github-container-registry-ghcr)
+- [Azure Container Registry (ACR)](/AzureDevOps/README.md#azure-container-registry-acr)
+- [AWS Elastic Container Registry (ECR)](/AzureDevOps/README.md#aws-elastic-container-registry-ecr)
+- [Quay.io](/AzureDevOps/README.md#quayio)
+- [ProGet](/AzureDevOps/README.md#proget)
+- [GitLab Container Registry](/AzureDevOps/README.md#gitlab-container-registry)
 
 ## Further information
 

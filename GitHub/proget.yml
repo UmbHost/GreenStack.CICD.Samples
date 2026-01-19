@@ -1,0 +1,43 @@
+name: Build and Push to ProGet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROGET_URL: proget.example.com
+  PROGET_FEED: docker-feed
+  IMAGE_NAME: DOCKER_IMAGE_NAME
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+            submodules: 'true'
+
+      - name: Log in to ProGet
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PROGET_URL }}
+          username: ${{ secrets.PROGET_USERNAME }}
+          password: ${{ secrets.PROGET_PASSWORD }}
+
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "tag=$(date +'%H%M%S%d%m%Y')" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        working-directory: ./
+        run: |
+          docker build -t ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} .
+          docker tag ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}
+          docker push ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:latest
+          echo "Published: ${{ env.PROGET_URL }}/${{ env.PROGET_FEED }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}"
+
+      - name: Trigger webhook
+        run: curl -fS -X POST ${{secrets.WEBHOOK_ENDPOINT}}

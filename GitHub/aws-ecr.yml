@@ -1,0 +1,47 @@
+name: Build and Push to AWS ECR
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: AWS_ACCOUNT_ID.dkr.ecr.AWS_REGION.amazonaws.com
+  IMAGE_NAME: DOCKER_IMAGE_NAME
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+            submodules: 'true'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "tag=$(date +'%H%M%S%d%m%Y')" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        working-directory: ./
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} .
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }} ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          echo "Published: ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.timestamp.outputs.tag }}"
+
+      - name: Trigger webhook
+        run: curl -fS -X POST ${{secrets.WEBHOOK_ENDPOINT}}
