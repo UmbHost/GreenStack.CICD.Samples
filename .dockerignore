@@ -40,10 +40,6 @@ packages/
 **/wwwroot/media/
 umbraco.config
 
-# Explicitly include Vite manifest (needed for asset loading)
-!**/wwwroot/.vite/
-!**/wwwroot/.vite/manifest.json
-
 # Node modules (if you have front-end build)
 **/node_modules/
 **/npm-debug.log
