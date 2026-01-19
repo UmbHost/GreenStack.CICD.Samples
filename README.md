@@ -5,7 +5,7 @@ CI/CD and Docker file samples to deploy Umbraco to GreenStack.
 > The Scripts are provided as is. This means that the scripts will do the bare minimum for a pipeline that is utilizing CI/CD.
 > They can be customised to include your frontend build, caching and more.
 
-For new users we recommend following the [Getting Started]([https://umbhost.net](https://umbhost.net/gb/blog/2026/01/getting-started-with-umbraco-17-on-greenstack-with-github) guide on our blog.
+For new users we recommend following the [Getting Started](https://umbhost.net/gb/blog/2026/01/getting-started-with-umbraco-17-on-greenstack-with-github) guide on our blog.
 
 ## CI/CD Samples
 
