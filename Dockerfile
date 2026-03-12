@@ -13,6 +13,12 @@ FROM build AS publish
 RUN dotnet publish "WEB_PROJECT_FOLDER/WEB_PROJECT_NAME.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false --no-build
 
 FROM base AS final
+
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --chown=1000:1000 --from=publish /app/publish .
+
+RUN mkdir -p umbraco/Logs umbraco/Data wwwroot/media \
+    && chown -R 1000:1000 umbraco wwwroot
+
+USER 1000:1000
 ENTRYPOINT ["dotnet", "WEB_PROJECT_NAME.dll", "--console-logger-format=json"]
